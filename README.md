@@ -79,7 +79,7 @@ Status key: `[ ]` planned, `[x]` built and tested.
 ## Architecture
 
 ```
-  Web pages (Jinja templates)
+  Web pages (React.js)
             |
             v
    FastAPI application
@@ -203,7 +203,7 @@ UNIQUE (doctor_id, start_time);
 |---|---|
 | Backend | Python, FastAPI, Pydantic |
 | Database | PostgreSQL, SQLAlchemy, Alembic |
-| Web pages | Jinja2 templates |
+| Web pages | React.js |
 | AI | Embeddings, ChromaDB, scikit-learn |
 | Testing | pytest, pytest-cov |
 | Delivery | Docker, Docker Compose, GitHub Actions |
