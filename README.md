@@ -79,10 +79,10 @@ Status key: `[ ]` planned, `[x]` built and tested.
 ## Architecture
 
 ```
-  Web pages (React.js)
-            |
+  React app (runs in the browser)
+            |  JSON over HTTP
             v
-   FastAPI application
+   FastAPI backend
    |-- Auth and roles
    |-- Booking, queue, admin
    |-- AI module (separate)  -->  RAG, wait-time model, agent
@@ -201,9 +201,9 @@ UNIQUE (doctor_id, start_time);
 
 | Area | Tools |
 |---|---|
+| Frontend | React, Vite, React Router |
 | Backend | Python, FastAPI, Pydantic |
 | Database | PostgreSQL, SQLAlchemy, Alembic |
-| Web pages | React.js |
 | AI | Embeddings, ChromaDB, scikit-learn |
 | Testing | pytest, pytest-cov |
 | Delivery | Docker, Docker Compose, GitHub Actions |
@@ -212,44 +212,47 @@ UNIQUE (doctor_id, start_time);
 
 ## Getting started
 
-**Prerequisites:** Python 3.12, PostgreSQL 15 or later, and Git.
+**Prerequisites:** Python 3.12, Node.js 20 or later, PostgreSQL 15 or later, and Git.
+
+**Backend**
 
 ```bash
-# 1. Clone and enter the project
 git clone https://github.com/<your-username>/campuscare.git
-cd campuscare
+cd campuscare/backend
 
-# 2. Create a virtual environment
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-
-# 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Configure your environment
-cp .env.example .env             # then edit DATABASE_URL and SECRET_KEY
-
-# 5. Create the database and its tables
+cp .env.example .env             # then edit the values
 createdb campuscare              # or create it in pgAdmin
 alembic upgrade head
-
-# 6. Add demo data (synthetic)
-python -m app.seed
-
-# 7. Run the app
+python -m app.seed               # synthetic demo data
 uvicorn app.main:app --reload
 ```
 
-Open http://127.0.0.1:8000/docs to try every endpoint.
+The API docs open at http://127.0.0.1:8000/docs.
 
-**Example `.env`**
+**Frontend** (in a second terminal)
+
+```bash
+cd campuscare/frontend
+npm install
+cp .env.example .env             # VITE_API_URL=http://127.0.0.1:8000
+npm run dev
+```
+
+The web app opens at http://localhost:5173.
+
+**Example backend `.env`**
 
 ```
 DATABASE_URL=postgresql+psycopg://postgres:password@localhost:5432/campuscare
 SECRET_KEY=change-me
+CORS_ORIGINS=http://localhost:5173
 ```
 
-Never commit your real `.env` file.
+Never commit your real `.env` files.
 
 ---
 
@@ -257,20 +260,34 @@ Never commit your real `.env` file.
 
 ```
 campuscare/
-|-- app/
-|   |-- main.py          # app entry point and /health
-|   |-- config.py        # settings from .env
-|   |-- database.py      # engine and session
-|   |-- models/          # one SQLAlchemy model per table
-|   |-- schemas/         # Pydantic request and response models
-|   |-- routers/         # doctors, slots, appointments, auth, admin
-|   |-- services/        # booking and queue logic
-|   |-- ai/              # RAG, wait-time model, agent (separate from booking)
-|   `-- seed.py          # synthetic demo data
-|-- migrations/          # Alembic migrations
-|-- tests/
-|-- docs/                # decision log, evaluation reports, diagrams
-|-- requirements.txt
+|-- backend/
+|   |-- app/
+|   |   |-- main.py          # app entry point and /health
+|   |   |-- config.py        # settings from .env
+|   |   |-- database.py      # engine and session
+|   |   |-- models/          # one SQLAlchemy model per table
+|   |   |-- schemas/         # Pydantic request and response models
+|   |   |-- routers/         # doctors, slots, appointments, auth, admin
+|   |   |-- services/        # booking and queue logic
+|   |   |-- ai/              # RAG, wait-time model, agent (separate from booking)
+|   |   `-- seed.py          # synthetic demo data
+|   |-- migrations/          # Alembic migrations
+|   |-- tests/
+|   |-- requirements.txt
+|   `-- .env.example
+|-- frontend/
+|   |-- src/
+|   |   |-- api/             # functions that call the backend
+|   |   |-- components/      # reusable pieces
+|   |   |-- pages/           # Login, Search, Book, MyAppointments, DoctorDashboard, Queue, Admin
+|   |   |-- App.jsx
+|   |   `-- main.jsx
+|   |-- index.html
+|   |-- package.json
+|   `-- .env.example
+|-- docs/                    # decision log, evaluation reports, diagrams
+|-- .github/workflows/       # CI
+|-- docker-compose.yml       # added later
 `-- README.md
 ```
 
@@ -279,6 +296,7 @@ campuscare/
 ## Running the tests
 
 ```bash
+cd backend
 pytest --cov=app
 ```
 
